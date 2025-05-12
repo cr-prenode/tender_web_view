@@ -2,24 +2,24 @@ import streamlit as st
 from utils import set_page_config
 
 # Set page configuration
-set_page_config("TrailBlaze - Home")
+set_page_config("TenderTrack - Home")
 
 # Landing page content
-st.title("🏕️ TrailBlaze")
-st.subheader("Your Adventure Photo Organizer")
+st.title("📊 TenderTrack")
+st.subheader("Your Public Tender Tracking System")
 
 # App description
 st.markdown("""
-### Welcome to TrailBlaze!
+### Welcome to TenderTrack!
 
-**Organize your outdoor adventure photos and create beautiful memories with TrailBlaze.**
+**Efficiently track and manage public tender offerings with TenderTrack.**
 
-TrailBlaze helps outdoor enthusiasts:
-- 📸 Organize photos from your hiking, camping, and outdoor adventures
-- 🗺️ Tag photos with location and trail information
-- 🏞️ Create beautiful memory collections for each adventure
-- ⏰ Set reminders for upcoming adventures
-- 🔔 Receive notifications about optimal weather conditions for photography
+TenderTrack helps organizations and individuals:
+- 📄 Track public tender announcements and deadlines
+- 🔍 Search for relevant tender opportunities
+- 📝 Organize tender documentation and requirements
+- ⏰ Set reminders for important submission dates
+- 🔔 Receive notifications about new tender opportunities
 """)
 
 # Features section
@@ -28,26 +28,26 @@ st.header("Features")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("#### 📸 Photo Organization")
-    st.markdown("Easily organize your adventure photos by trip, location, or date.")
+    st.markdown("#### 📄 Tender Tracking")
+    st.markdown("Easily track public tenders by sector, location, or deadline.")
     
-    st.markdown("#### 🗺️ Location Tagging")
-    st.markdown("Tag photos with trail information and geographical data.")
+    st.markdown("#### 🔍 Advanced Search")
+    st.markdown("Find relevant tender opportunities with powerful search filters.")
 
 with col2:
-    st.markdown("#### ⏰ Adventure Reminders")
-    st.markdown("Set reminders for upcoming hikes and outdoor activities.")
+    st.markdown("#### ⏰ Deadline Reminders")
+    st.markdown("Set reminders for important submission dates and never miss a deadline.")
     
-    st.markdown("#### 🔔 Smart Notifications")
-    st.markdown("Get notified about ideal weather conditions for your next photography adventure.")
+    st.markdown("#### 🔔 Opportunity Alerts")
+    st.markdown("Get notified about new tender opportunities in your areas of interest.")
 
 # Call to action
-st.header("Ready to Organize Your Adventures?")
-st.markdown("Check out our available adventure tenders and start planning your next outdoor expedition!")
+st.header("Ready to Find Tender Opportunities?")
+st.markdown("Check out our available public tenders and start tracking potential business opportunities!")
 
-if st.button("Explore Adventure Tenders"):
+if st.button("Explore Public Tenders"):
     st.switch_page("pages/tenders.py")
 
 # Footer
 st.markdown("---")
-st.markdown("© 2023 TrailBlaze - Your Adventure Photo Organizer")
+st.markdown("© 2023 TenderTrack - Your Public Tender Tracking System")
