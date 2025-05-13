@@ -47,18 +47,6 @@ def display_metadata(s3_client, bucket_name):
         metadata = json.loads(metadata_content)
         
         # Display in expandable section
-        with st.expander("Document Metadata", expanded=False):
-            # Display as formatted JSON
-            st.json(metadata)
-            
-            # Option to download metadata
-            metadata_download = io.BytesIO(metadata_content.encode())
-            st.download_button(
-                label="Download metadata.json",
-                data=metadata_download,
-                file_name="metadata.json",
-                mime="application/json"
-            )
             
         return metadata
     except Exception as e:
@@ -84,21 +72,21 @@ if 's3_client' not in st.session_state:
 if 'metadata' not in st.session_state:
     st.session_state.metadata = None
 
-# Show connection info in sidebar
-with st.sidebar:
-    st.header("Connection Info")
-    st.info(f"Connected to bucket: {bucket_name}")
-    st.info(f"Endpoint: {os.getenv('S3_ENDPOINT_URL')}")
+# # Show connection info in sidebar
+# with st.sidebar:
+#     st.header("Connection Info")
+#     st.info(f"Connected to bucket: {bucket_name}")
+#     st.info(f"Endpoint: {os.getenv('S3_ENDPOINT_URL')}")
     
-    # Add a refresh button
-    if st.button("Refresh Connection"):
-        st.session_state.s3_client = connect_to_s3()
-        st.rerun()
+#     # Add a refresh button
+#     if st.button("Refresh Connection"):
+#         st.session_state.s3_client = connect_to_s3()
+#         st.rerun()
     
-    # Show other environment variables for debugging
-    with st.expander("Environment Variables", expanded=False):
-        st.text(f"Service Account: {os.getenv('S3_SERVICE_ACCOUNT', 'Not set')}")
-        st.text(f"Bucket ARN: {os.getenv('S3_BUCKET_ARN', 'Not set')}")
+#     # Show other environment variables for debugging
+#     with st.expander("Environment Variables", expanded=False):
+#         st.text(f"Service Account: {os.getenv('S3_SERVICE_ACCOUNT', 'Not set')}")
+#         st.text(f"Bucket ARN: {os.getenv('S3_BUCKET_ARN', 'Not set')}")
         
 if st.session_state.s3_client:
     # Display metadata if available
@@ -107,62 +95,65 @@ if st.session_state.s3_client:
         st.session_state.metadata = metadata
     
     # Create tabs for different functionalities
-    tab1, tab2 = st.tabs(["PDF Documents", "Metadata Explorer"])
+    # tab1, tab2 = st.tabs(["PDF Documents", "Metadata Explorer"])
     
-    with tab1:
+    # with tab1:
         # Optional prefix/folder filter
         
         # List PDFs in the configured bucket
-        pdf_objects = list_pdf_objects(st.session_state.s3_client, bucket_name, tender_id)
-        
-        if pdf_objects:
-            selected_pdf = st.selectbox("Select PDF Document", pdf_objects)
-            
-            if selected_pdf:
-                st.subheader(f"Viewing: {os.path.basename(selected_pdf)}")
-                display_pdf(st.session_state.s3_client, bucket_name, selected_pdf)
-        else:
-            st.info(f"No PDF documents found in bucket {bucket_name} with tender id '{tender_id}'")
+    pdf_objects = list_pdf_objects(st.session_state.s3_client, bucket_name, tender_id)
     
-    with tab2:
-        if st.session_state.metadata:
-            st.subheader("Metadata Explorer")
-            # Allow searching through metadata
-            search_term = st.text_input("Search in metadata", "")
+    # remove /documents/ prefix from the object keys
+    # make a dict with display name and object key
+    
+    if pdf_objects:
+        selected_pdf = st.selectbox("Select PDF Document", pdf_objects)
+        
+        if selected_pdf:
+            st.subheader(f"Viewing: {os.path.basename(selected_pdf)}")
+            display_pdf(st.session_state.s3_client, bucket_name, selected_pdf)
+    else:
+        st.info(f"No PDF documents found in bucket {bucket_name} with tender id '{tender_id}'")
+    
+    # with tab2:
+    #     if st.session_state.metadata:
+    #         st.subheader("Metadata Explorer")
+    #         # Allow searching through metadata
+    #         search_term = st.text_input("Search in metadata", "")
             
-            if search_term:
-                # Simple recursive function to search in nested JSON
-                def search_json(data, term, path=""):
-                    results = []
-                    if isinstance(data, dict):
-                        for k, v in data.items():
-                            new_path = f"{path}.{k}" if path else k
-                            if term.lower() in str(k).lower() or term.lower() in str(v).lower():
-                                results.append((new_path, v))
-                            if isinstance(v, (dict, list)):
-                                results.extend(search_json(v, term, new_path))
-                    elif isinstance(data, list):
-                        for i, item in enumerate(data):
-                            new_path = f"{path}[{i}]"
-                            if term.lower() in str(item).lower():
-                                results.append((new_path, item))
-                            if isinstance(item, (dict, list)):
-                                results.extend(search_json(item, term, new_path))
-                    return results
+    #         if search_term:
+    #             # Simple recursive function to search in nested JSON
+    #             def search_json(data, term, path=""):
+    #                 results = []
+    #                 if isinstance(data, dict):
+    #                     for k, v in data.items():
+    #                         new_path = f"{path}.{k}" if path else k
+    #                         if term.lower() in str(k).lower() or term.lower() in str(v).lower():
+    #                             results.append((new_path, v))
+    #                         if isinstance(v, (dict, list)):
+    #                             results.extend(search_json(v, term, new_path))
+    #                 elif isinstance(data, list):
+    #                     for i, item in enumerate(data):
+    #                         new_path = f"{path}[{i}]"
+    #                         if term.lower() in str(item).lower():
+    #                             results.append((new_path, item))
+    #                         if isinstance(item, (dict, list)):
+    #                             results.extend(search_json(item, term, new_path))
+    #                 return results
                 
-                search_results = search_json(st.session_state.metadata, search_term)
-                if search_results:
-                    st.subheader(f"Found {len(search_results)} matches")
-                    for path, value in search_results:
-                        with st.expander(f"Path: {path}"):
-                            st.write(value)
-                else:
-                    st.info(f"No matches found for '{search_term}'")
-            else:
-                # Display complete metadata in a structured way
-                st.json(st.session_state.metadata)
-        else:
-            st.info("metadata.json not found in the bucket's top directory")
+    #             search_results = search_json(st.session_state.metadata, search_term)
+    #             if search_results:
+    #                 st.subheader(f"Found {len(search_results)} matches")
+    #                 for path, value in search_results:
+    #                     with st.expander(f"Path: {path}"):
+    #                         st.write(value)
+    #             else:
+    #                 st.info(f"No matches found for '{search_term}'")
+    #         else:
+    #             # Display complete metadata in a structured way
+    #             st.json(st.session_state.metadata)
+    #     else:
+    #         st.info("metadata.json not found in the bucket's top directory")
 else:
     st.error("Failed to connect to S3. Check your environment variables and connection.")
 

@@ -28,7 +28,7 @@ import io
 
 
 
-class RAGPipeline:
+class QueryPipeline:
     """
     A class to extract summaries from PDF documents using a pipeline of components.
     Attributes:
@@ -47,7 +47,7 @@ class RAGPipeline:
         self.document_store = ChromaDocumentStore(host="localhost", port="8000")
         self.llm_id = llm_id
         self.embedding_model_id = embedding_model_id
-        self.indexing_pipeline, self.query_pipeline = self._setup_pipelines(hf_api_key)
+        self.query_pipeline = self._setup_pipelines(hf_api_key)
 
     def _setup_pipelines(self, api_key):
         prompt_template = """
@@ -93,11 +93,12 @@ class RAGPipeline:
 
         return query_pipeline
 
-    def answer_question(self, question) -> str:
+    def answer_question(self, question:str, tender_id:str) -> str:
         results = self.query_pipeline.run(
             {
                 "text_embedder": {"text": question},
                 "prompt_builder": {"question": question},
+                "retriever": {"filters": {"field": "meta.tender_id", "operator": "==", "value": tender_id}},
             },
             include_outputs_from=["llm", "prompt_builder"],
         )

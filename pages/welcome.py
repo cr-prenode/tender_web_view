@@ -41,11 +41,11 @@ with col2:
 st.header("Ready to Find Tender Opportunities?")
 st.markdown("Check out our available public tenders and start tracking potential business opportunities!")
 
-if st.button("Explore Public Tenders"):
-    st.switch_page("pages/Tender Details.py")
+if st.button("Explore Scraped Tenders"):
+    st.switch_page("pages/tender_details.py")
 
 if st.button("Document Details"):
-    st.switch_page("pages/Document Viewer.py")
+    st.switch_page("pages/document_viewer.py")
 
 # Footer
 st.markdown("---")
