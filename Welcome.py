@@ -2,16 +2,14 @@ import streamlit as st
 from utils import set_page_config
 
 # Set page configuration
-set_page_config("TenderTrack - Home")
+set_page_config("AI Tender Analysis - Home")
 
 # Landing page content
-st.title("📊 TenderTrack")
-st.subheader("Your Public Tender Tracking System")
+st.title("AI Tender Analysis")
+st.subheader("Track and Analyze Public Tenders with AI")
 
 # App description
 st.markdown("""
-### Welcome to TenderTrack!
-
 **Efficiently track and manage public tender offerings with TenderTrack.**
 
 TenderTrack helps organizations and individuals:
@@ -47,6 +45,9 @@ st.markdown("Check out our available public tenders and start tracking potential
 
 if st.button("Explore Public Tenders"):
     st.switch_page("pages/tenders.py")
+
+if st.button("Document Details"):
+    st.switch_page("pages/document_viewer.py")
 
 # Footer
 st.markdown("---")

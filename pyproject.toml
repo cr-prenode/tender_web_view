@@ -1,9 +1,16 @@
 [project]
-name = "repl-nix-workspace"
+name = "tender-webdisplay"
 version = "0.1.0"
 description = "Add your description here"
-requires-python = ">=3.11"
+readme = "README.md"
+requires-python = ">=3.9"
 dependencies = [
-    "pandas>=2.2.3",
-    "streamlit>=1.45.0",
+    "boto3>=1.37.26",
+    "dotenv>=0.9.9",
+    "pypdf2>=3.0.1",
+    "streamlit>=1.44.1",
+    "watchdog>=6.0.0",
+    "pyarrow>=19.0.0",
+    "haystack-ai>=2.13.2",
+    "chroma-haystack>=3.1.0",
 ]
