@@ -2,9 +2,36 @@ import streamlit as st
 import pandas as pd
 from utils import set_page_config
 from data.tender_provider import get_tenders
+from rag_pipeline.indexer.indexing_pipeline import IndexingPipeline
+from dotenv import load_dotenv
+import os
 
-# Set page configuration
+load_dotenv()
 
+
+hf_api_key = os.getenv("HF_API_KEY")
+
+
+# Initialize Indexing Pipeline
+indexing_pipeline = IndexingPipeline(
+    hf_api_key=hf_api_key,
+    embedding_model_id="intfloat/multilingual-e5-large-instruct",
+)
+
+
+def navigate_to_document_viewer(tender_id):
+    """Sets the document ID and navigates to the document viewer page."""
+    st.session_state.tender_id = tender_id
+    st.switch_page("pages/document_viewer.py")
+
+def run_index(tender_id):
+    """Runs the indexing pipeline on the selected tender."""
+    try:
+        # Assuming the tender ID is the S3 object key
+        indexing_pipeline.index_documents(tender_id)
+        st.success(f"Indexing completed for Tender ID: {tender_id}")
+    except Exception as e:
+        st.error(f"Error during indexing: {e}")
 
 # Page header
 st.title("📜 Public Tenders")
@@ -39,10 +66,6 @@ if selected_location != "All":
 # Display tenders
 st.markdown("### Available Public Tenders")
 
-def navigate_to_document_viewer(tender_id):
-    """Sets the document ID and navigates to the document viewer page."""
-    st.session_state.tender_id = tender_id
-    st.switch_page("pages/document_viewer.py")
 
 if filtered_tenders is None:
     st.warning("No public tenders found matching your filters. Please try different filter options.")
@@ -62,15 +85,15 @@ else:
             
             with col2:
                 # Action buttons
-                st.button("Run Index (AI)", key=f"index_{tender_details['id']}")
+                
+                if st.button("Run Index (AI)", key=f"index_{tender_details['id']}"):
+                    with st.spinner('Indexing in progress...'):
+                        # Call the function to run the indexing pipeline
+                        run_index(tender_details['id'])
                 
                 # This button now calls a callback function that sets the state and switches page
                 if st.button("Document Details", key=f"details_{tender_details['id']}"):
                     navigate_to_document_viewer(tender_details['id'])
-
-# Add a back to home button
-if st.button("Back to Home"):
-    st.switch_page("app.py")
 
 # Footer
 st.markdown("---")

@@ -13,4 +13,7 @@ dependencies = [
     "pyarrow>=19.0.0",
     "haystack-ai>=2.13.2",
     "chroma-haystack>=3.1.0",
+    "protobuf<=3.20.*",
+    "pypdf>=5.5.0",
+    "tqdm>=4.67.1",
 ]

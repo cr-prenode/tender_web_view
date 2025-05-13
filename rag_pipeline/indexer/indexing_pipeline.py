@@ -17,6 +17,7 @@ from haystack.components.embedders import (
     HuggingFaceAPITextEmbedder,
     HuggingFaceAPIDocumentEmbedder,
 )
+from haystack.document_stores.types import DuplicatePolicy
 from haystack.components.rankers import LostInTheMiddleRanker
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
@@ -26,7 +27,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import io
 from data.s3_connection import connect_to_s3, list_pdf_objects
-
+from tqdm import tqdm
 client = connect_to_s3()
 
 
@@ -62,7 +63,7 @@ class IndexingPipeline:
         """
 
         indexing_pipeline = Pipeline()
-        indexing_pipeline.add_component("converter", PyPDFToDocument())
+        # indexing_pipeline.add_component("converter", PyPDFToDocument())
         indexing_pipeline.add_component("cleaner", DocumentCleaner())
         indexing_pipeline.add_component(
             "splitter", DocumentSplitter(split_by="period", split_length=6)
@@ -73,13 +74,14 @@ class IndexingPipeline:
                 api_type="serverless_inference_api",
                 api_params={"model": self.embedding_model_id},
                 token=Secret.from_token(api_key),
+                meta_fields_to_embed=["tender_id"],
             ),
         )
         indexing_pipeline.add_component(
-            "writer", DocumentWriter(document_store=self.document_store)
+            "writer", DocumentWriter(document_store=self.document_store, policy=DuplicatePolicy.SKIP)
         )
 
-        indexing_pipeline.connect("converter", "cleaner")
+        # indexing_pipeline.connect("converter", "cleaner")
         indexing_pipeline.connect("cleaner", "splitter")
         indexing_pipeline.connect("splitter", "document_embedder")
         indexing_pipeline.connect("document_embedder", "writer")
@@ -90,25 +92,29 @@ class IndexingPipeline:
     def index_documents(self, tender_id):
 
         pdfs = list_pdf_objects(client, bucket_name="prenode-bucket", prefix=tender_id)
-
+        converter = PyPDFToDocument()
         # download the files
         file_paths = []
-        for pdf in pdfs:
+        raw_docs = []
+        for pdf in tqdm(pdfs):
             file_path = f"/tmp/{os.path.basename(pdf)}"
             client.download_file("prenode-bucket", pdf, file_path)
             file_paths.append(file_path)
+            documents = converter.run(sources = [Path(file_path)])
 
-        while True:
-            try:
-                self.indexing_pipeline.run(
-                    {
-                        "converter": {"sources": list(file_paths)},
-                        "writer": {"meta": {"id": tender_id}},
-                    },
+            for doc in documents:
+                # Add metadata during creation
+                raw_docs.append(
+                    Document(
+                        content=doc,
+                        meta={"tender_id": tender_id},
+                    )
                 )
-
-                break
-            except Exception as e:
-                print(f"Error running pipeline: {e}. Retrying...")
-
-    
+            # Add metadata during creation
+        
+        self.indexing_pipeline.run(
+            {
+                "cleaner": {"documents": raw_docs}
+                
+            },
+        )
