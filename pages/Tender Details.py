@@ -4,7 +4,7 @@ from utils import set_page_config
 from data.tender_provider import get_tenders
 
 # Set page configuration
-set_page_config("TenderTrack - Public Tenders")
+
 
 # Page header
 st.title("📜 Public Tenders")
@@ -39,6 +39,11 @@ if selected_location != "All":
 # Display tenders
 st.markdown("### Available Public Tenders")
 
+def navigate_to_document_viewer(tender_id):
+    """Sets the document ID and navigates to the document viewer page."""
+    st.session_state.tender_id = tender_id
+    st.switch_page("pages/document_viewer.py")
+
 if filtered_tenders is None:
     st.warning("No public tenders found matching your filters. Please try different filter options.")
 else:
@@ -58,7 +63,10 @@ else:
             with col2:
                 # Action buttons
                 st.button("Run Index (AI)", key=f"index_{tender_details['id']}")
-    pass
+                
+                # This button now calls a callback function that sets the state and switches page
+                if st.button("Document Details", key=f"details_{tender_details['id']}"):
+                    navigate_to_document_viewer(tender_details['id'])
 
 # Add a back to home button
 if st.button("Back to Home"):

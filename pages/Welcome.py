@@ -1,8 +1,6 @@
 import streamlit as st
 from utils import set_page_config
 
-# Set page configuration
-set_page_config("AI Tender Analysis - Home")
 
 # Landing page content
 st.title("AI Tender Analysis")
@@ -44,10 +42,10 @@ st.header("Ready to Find Tender Opportunities?")
 st.markdown("Check out our available public tenders and start tracking potential business opportunities!")
 
 if st.button("Explore Public Tenders"):
-    st.switch_page("pages/tenders.py")
+    st.switch_page("pages/Tender Details.py")
 
 if st.button("Document Details"):
-    st.switch_page("pages/document_viewer.py")
+    st.switch_page("pages/Document Viewer.py")
 
 # Footer
 st.markdown("---")
